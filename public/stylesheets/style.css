@@ -1,0 +1,12 @@
+body {
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+.node{
+            width:600px;
+            margin-bottom: 20px;
+            overflow:hidden;
+        }
+        .embed img
+        {
+            width:300px;
+        }

@@ -1,0 +1,14 @@
+h1= 'Your media and links will appear below'
+#content
+:javascript
+  | //socket = new io.Socket('mediastream.vps2.tryingitout.co.uk', {port: 3010});
+  | socket = new io.Socket('mediastream.john.dev', {port: 3010});
+  | socket.connect();
+  | socket.send({token: '#{token}', token_secret: '#{token_secret}'})
+  | socket.on('message', function(jsondata){
+  |     data = JSON.parse(jsondata);
+  |     for(var i=0; i<data.length; i++)
+  |     {
+  |       $("<div class='node'><a href='"+data[i].url+"'>"+data[i].url+"</a></div>").embedly({maxWidth: 600, maxHeight: 450}).prependTo("#content");
+  |     }
+  | });
