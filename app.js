@@ -1,5 +1,6 @@
 
 var sys = require('sys');
+var http = require('http');
 var     json = JSON.stringify,
         log = sys.puts;
 
@@ -118,7 +119,11 @@ socket.on('connection', function(client){
                 if(data.entities.urls.length>0)
                 {
                     //Send them to the client as a json string
-                    client.send(json(data.entities.urls));
+                    for(var i=0; i<data.entities.urls.length; i++)
+                    {
+                      get_long_url(data.entities.urls[i], client);
+                    }
+                    //client.send(json(data.entities.urls));
                     sys.puts(sys.inspect(data.entities.urls));
                 }
             }
@@ -137,6 +142,40 @@ socket.on('connection', function(client){
     client.stream.emit('close');
   });
 });
+
+var tweetmeme_client = http.createClient(80, "api.tweetmeme.com");
+var EventEmitter = require('events').EventEmitter;
+var tweetmeme_emmiter = new EventEmitter;
+
+tweetmeme_emmiter.on('url', function(urldata, client){
+    client.send(json([urldata]));
+    sys.puts(sys.inspect(urldata));
+});
+
+function get_long_url(urldata, client)
+{
+   var url = urldata.url;
+    var request = tweetmeme_client.request("GET", "/url_info.json?url="+url, {"host": "api.tweetmeme.com"});
+
+    request.addListener("response", function(response) {
+        var body = "";
+        response.addListener("data", function(data) {
+            body += data;
+        });
+
+        response.addListener("end", function() {
+            var jsondata = JSON.parse(body);
+
+            if(jsondata.status=='success')
+            {
+                urldata.url = jsondata.story.url;
+            }
+            tweetmeme_emmiter.emit("url", urldata, client);
+        });
+    });
+
+    request.end();
+}
 
 // Only listen on $ node app.js
 if (!module.parent) {
